@@ -92,6 +92,8 @@ pnpm dev
 
 - **[PLAN.md](./PLAN.md)**: Plan de desarrollo completo con arquitectura, roadmap, y estimaciones
 - **[RESEARCH.md](./RESEARCH.md)**: Investigación exhaustiva de casos de éxito y mejores prácticas
+- **[DEPLOYMENT_OPTIONS.md](./DEPLOYMENT_OPTIONS.md)**: Opciones de deployment (Starknet Mainnet vs Appchain + Celestia)
+- **[EXECUTIVE_SUMMARY.md](./EXECUTIVE_SUMMARY.md)**: Resumen ejecutivo para stakeholders e inversores
 
 ## Roadmap
 
