@@ -1,6 +1,16 @@
-// For local development, each template workspace extends the monorepo's `tsconfig.json`, which includes `paths` to resolve TS source.
-// To strip out the `paths`, we replace the template workspace root `tsconfig.json` with a new base tsconfig that extends only
-// @latticexyz/common/tsconfig.base.json
 {
-  "extends": "../../tsconfig.json"
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "skipLibCheck": true,
+    "strict": true,
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "exclude": ["node_modules", "dist", "build", "out"]
 }
