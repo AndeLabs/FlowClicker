@@ -305,6 +305,14 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": "/src",
+      // Explicit React aliases for pnpm monorepo resolution
+      "react": "react",
+      "react-dom": "react-dom",
     },
+    dedupe: ["react", "react-dom"],
+  },
+
+  optimizeDeps: {
+    include: ["react", "react-dom"],
   },
 });
