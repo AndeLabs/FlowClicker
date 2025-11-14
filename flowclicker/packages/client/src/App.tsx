@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useAccount } from "wagmi";
 import { ClickButton } from "./components/game/ClickButton";
 import { TokenCounter } from "./components/game/TokenCounter";
 import { TrustScore } from "./components/game/TrustScore";
@@ -12,8 +13,7 @@ import { calculateTokensPerClick, getCurrentGameYear } from "./lib/utils";
 import "./styles/globals.css";
 
 function App() {
-  const [walletAddress, setWalletAddress] = useState<string>();
-  const [isConnecting, setIsConnecting] = useState(false);
+  const { address: walletAddress, isConnected } = useAccount();
   const [isProcessingClick, setIsProcessingClick] = useState(false);
 
   const { stats, incrementClick, addTokens } = useGameState();
@@ -26,27 +26,8 @@ function App() {
   const tokensPerClick = calculateTokensPerClick(startTimestamp, currentTimestamp);
   const currentYear = getCurrentGameYear(startTimestamp, currentTimestamp);
 
-  const handleConnect = async () => {
-    setIsConnecting(true);
-    try {
-      // TODO: Implement actual wallet connection
-      // For now, just mock it
-      setTimeout(() => {
-        setWalletAddress("0x1234567890123456789012345678901234567890");
-        setIsConnecting(false);
-      }, 1000);
-    } catch (error) {
-      console.error("Failed to connect wallet:", error);
-      setIsConnecting(false);
-    }
-  };
-
-  const handleDisconnect = () => {
-    setWalletAddress(undefined);
-  };
-
   const handleClick = async () => {
-    if (!walletAddress) {
+    if (!isConnected || !walletAddress) {
       alert("Please connect your wallet first!");
       return;
     }
@@ -94,12 +75,7 @@ function App() {
             </div>
           </div>
 
-          <ConnectWallet
-            address={walletAddress}
-            onConnect={handleConnect}
-            onDisconnect={handleDisconnect}
-            isConnecting={isConnecting}
-          />
+          <ConnectWallet />
         </div>
       </header>
 
@@ -120,14 +96,14 @@ function App() {
             <div className="flex justify-center py-12">
               <ClickButton
                 onClick={handleClick}
-                disabled={!walletAddress}
+                disabled={!isConnected}
                 tokensPerClick={tokensPerClick}
                 isProcessing={isProcessingClick}
               />
             </div>
 
             {/* Instructions */}
-            {!walletAddress && (
+            {!isConnected && (
               <div className="rounded-xl border border-primary/30 bg-primary/5 p-6 text-center">
                 <h3 className="mb-2 text-lg font-semibold">
                   Welcome to FlowClicker! 🎮
