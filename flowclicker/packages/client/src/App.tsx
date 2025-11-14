@@ -1,16 +1,25 @@
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import { useAccount } from "wagmi";
 import { ClickButton } from "./components/game/ClickButton";
 import { TokenCounter } from "./components/game/TokenCounter";
-import { TrustScore } from "./components/game/TrustScore";
-import { GameStats } from "./components/game/GameStats";
 import { ConnectWallet } from "./components/web3/ConnectWallet";
-import { RegisterSW } from "./components/pwa/RegisterSW";
+import { ComponentSkeleton } from "./components/ui/LoadingFallback";
 import { useGameState } from "./hooks/game/useGameState";
 import { usePlayerData } from "./hooks/web3/usePlayerData";
 import { useGlobalState } from "./hooks/web3/useGlobalState";
 import { calculateTokensPerClick, getCurrentGameYear } from "./lib/utils";
 import "./styles/globals.css";
+
+// Lazy load non-critical components for better performance
+const TrustScore = lazy(() =>
+  import("./components/game/TrustScore").then((m) => ({ default: m.TrustScore }))
+);
+const GameStats = lazy(() =>
+  import("./components/game/GameStats").then((m) => ({ default: m.GameStats }))
+);
+const RegisterSW = lazy(() =>
+  import("./components/pwa/RegisterSW").then((m) => ({ default: m.RegisterSW }))
+);
 
 function App() {
   const { address: walletAddress, isConnected } = useAccount();
@@ -85,12 +94,14 @@ function App() {
           {/* Left Column - Game Area */}
           <div className="space-y-8">
             {/* Stats */}
-            <GameStats
-              totalClicks={totalClicks}
-              clicksThisSession={stats.clicksThisSession}
-              avgClickRate={stats.avgClickRate}
-              currentYear={currentYear}
-            />
+            <Suspense fallback={<ComponentSkeleton />}>
+              <GameStats
+                totalClicks={totalClicks}
+                clicksThisSession={stats.clicksThisSession}
+                avgClickRate={stats.avgClickRate}
+                currentYear={currentYear}
+              />
+            </Suspense>
 
             {/* Click Button */}
             <div className="flex justify-center py-12">
@@ -130,10 +141,12 @@ function App() {
 
             {/* Trust Score */}
             {playerData && (
-              <TrustScore
-                score={playerData.trustScore}
-                isBotFlagged={playerData.isBotFlagged}
-              />
+              <Suspense fallback={<ComponentSkeleton />}>
+                <TrustScore
+                  score={playerData.trustScore}
+                  isBotFlagged={playerData.isBotFlagged}
+                />
+              </Suspense>
             )}
 
             {/* Game Info */}
@@ -198,7 +211,9 @@ function App() {
       </footer>
 
       {/* PWA Update Toast */}
-      <RegisterSW />
+      <Suspense fallback={null}>
+        <RegisterSW />
+      </Suspense>
     </div>
   );
 }

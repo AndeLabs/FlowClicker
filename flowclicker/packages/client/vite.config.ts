@@ -231,14 +231,65 @@ export default defineConfig({
     minify: true,
     sourcemap: true,
 
-    // Optimize bundle
+    // Optimize bundle with aggressive code splitting
     rollupOptions: {
       output: {
-        manualChunks: {
-          "vendor-react": ["react", "react-dom"],
-          "vendor-motion": ["framer-motion"],
-          "vendor-web3": ["viem", "wagmi"],
-          "vendor-icons": ["lucide-react"],
+        manualChunks: (id) => {
+          // React core - highest priority, load first
+          if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) {
+            return 'vendor-react';
+          }
+
+          // Web3Modal - largest dependency, split separately
+          if (id.includes('@web3modal')) {
+            return 'vendor-web3modal';
+          }
+
+          // Wagmi and Viem - core Web3 functionality
+          if (id.includes('wagmi') || id.includes('viem')) {
+            return 'vendor-web3-core';
+          }
+
+          // React Query - data fetching
+          if (id.includes('@tanstack/react-query')) {
+            return 'vendor-query';
+          }
+
+          // Framer Motion - animations
+          if (id.includes('framer-motion')) {
+            return 'vendor-motion';
+          }
+
+          // Three.js and React Three Fiber - 3D graphics
+          if (id.includes('three') || id.includes('@react-three')) {
+            return 'vendor-three';
+          }
+
+          // Particles
+          if (id.includes('@tsparticles')) {
+            return 'vendor-particles';
+          }
+
+          // MUD Framework
+          if (id.includes('@latticexyz')) {
+            return 'vendor-mud';
+          }
+
+          // Icons and UI utilities
+          if (id.includes('lucide-react') || id.includes('class-variance-authority') ||
+              id.includes('clsx') || id.includes('tailwind-merge')) {
+            return 'vendor-ui-utils';
+          }
+
+          // RxJS
+          if (id.includes('rxjs')) {
+            return 'vendor-rxjs';
+          }
+
+          // All other node_modules
+          if (id.includes('node_modules')) {
+            return 'vendor-other';
+          }
         },
       },
     },
