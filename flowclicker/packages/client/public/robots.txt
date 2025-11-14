@@ -1,0 +1,6 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+
+# Sitemap (update with actual domain when deployed)
+# Sitemap: https://flowclicker.com/sitemap.xml
