@@ -69,21 +69,41 @@
 
 ### Token Economics ($FLOW)
 
+**Mecánica Core: 1 Click = Mint Automático**
+
+Cada click válido **minta (crea) tokens $FLOW instantáneamente** y los deposita en la wallet del jugador:
+
+```
+Click válido → Validación anti-bot → Mint de tokens → Transferencia inmediata
+```
+
+**Cantidad de Tokens por Click (Decaimiento Temporal):**
+- **Año 1**: 0.01 $FLOW por click (incentiva adopción temprana)
+- **Año 2**: 0.004 $FLOW por click (reducción 60%)
+- **Año 3**: 0.001 $FLOW por click (reducción 75%)
+- **Post-3 años**: 0.0005 $FLOW por click (sostenible)
+
+**Supply Proyectado (100K usuarios, 10M clicks/día):**
+- Total 3 años: ~55M $FLOW minteados
+- Post-3 años: Emisión mínima + burn mechanisms = deflacionario
+
 **Utilidad del Token:**
-- Reward por clicks (decay 3 años)
-- Moneda para boosts y cosmetics
-- Governance (votar features)
-- Staking para multiplicadores
+- ✅ Obtenido por clicks (proof of activity)
+- ✅ Moneda para boosts temporales (2x multiplicador)
+- ✅ Compra de cosmetics (efectos de click premium)
+- ✅ Entry fees a torneos
+- ✅ Governance (votar nuevas features)
 
-**Burn Mechanisms:**
+**Burn Mechanisms (Deflación):**
 - 50% de boosts comprados → burn
-- 100% de cosmetics → burn
-- Tournament fees → 50% burn
+- 100% de cosmetics comprados → burn
+- 50% de tournament fees → burn
+- Resultado: Año 2+ = deflacionario
 
-**Proyección:**
-- Año 1: Inflacionario (bootstrap users)
-- Año 2: Neutral (mint ≈ burn)
-- Año 3+: Deflacionario (burn > mint)
+**Proyección de Supply:**
+- Año 1: +36.5M $FLOW (inflacionario, crecimiento)
+- Año 2: +14.6M $FLOW minteados, -15M quemados (neutral)
+- Año 3+: +3.6M $FLOW minteados, -10M quemados (deflacionario)
 
 ### Proyección Financiera (Conservadora)
 

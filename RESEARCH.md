@@ -757,34 +757,95 @@ Token Mechanics:
 - Governance: holders votan nuevas features
 ```
 
-### 7.2 Token Economics (Ejemplo)
+### 7.2 Token Economics - Mecánica de Mint por Click
 
+**CORE MECHANIC: Cada click válido minta tokens instantáneamente**
+
+```cairo
+// Cada click ejecuta esta lógica onchain:
+fn execute_click(player, timestamp) -> tokens_minted {
+    // 1. Validar anti-bot
+    if !is_valid_click(player, timestamp) {
+        return 0;
+    }
+
+    // 2. Calcular tokens según tiempo transcurrido (decay)
+    tokens = calculate_tokens_per_click(timestamp);
+
+    // 3. MINT tokens al jugador
+    mint($FLOW, player, tokens);
+
+    // 4. Return tokens para mostrar en UI
+    return tokens;
+}
 ```
-Total Supply: 1,000,000,000 $FLOW
+
+**Tokens por Click (Decaimiento Temporal):**
+```
+Año 1 (días 0-365):     0.01 $FLOW por click
+Año 2 (días 366-730):   0.004 $FLOW por click (-60%)
+Año 3 (días 731-1095):  0.001 $FLOW por click (-75%)
+Post-3 años:            0.0005 $FLOW por click (sostenible)
+```
+
+**Proyección de Supply (Mint via Clicks):**
+```
+Suposiciones:
+- 100K usuarios activos promedio
+- 100 clicks/usuario/día
+- 10M clicks totales/día
+
+Supply Minteado:
+Año 1: 10M × 0.01 × 365 = 36,500,000 $FLOW
+Año 2: 10M × 0.004 × 365 = 14,600,000 $FLOW
+Año 3: 10M × 0.001 × 365 = 3,650,000 $FLOW
+----------------------------------------
+TOTAL 3 años: ~55M $FLOW (todo via clicks)
+
+Post-3 años: ~1.8M $FLOW/año (mínimo, sostenible)
+```
+
+**Distribución Inicial (Pre-mine para liquidez y equipo):**
+```
+Total Pre-mine: 100,000,000 $FLOW
 
 Distribution:
-- Rewards (3 años):     50%  (500M)
-- Team/Dev:             20%  (200M, vested 2 años)
-- Marketing/Airdrops:   15%  (150M)
-- Liquidity:            10%  (100M)
-- Treasury (DAO):        5%  (50M)
+- Team/Dev:             40M (40%, vested 2 años)
+- Liquidity Pool:       30M (30%, para DEX)
+- Marketing/Airdrops:   20M (20%, growth)
+- Treasury (DAO):       10M (10%, governance)
 
-Emission Schedule:
-Año 1: 250M FLOW (50% del reward pool)
-Año 2: 150M FLOW (30%)
-Año 3: 100M FLOW (20%)
-Post: Inflation minimal (fees del protocol)
+Post Pre-mine: Todo el supply viene de clicks (descentralizado)
+```
 
-Burn Mechanisms:
+**Burn Mechanisms (Deflación):**
+```
 - 50% de boosts purchased → burn
 - 100% de cosmetics purchased → burn
-- Tournament fees → 50% burn, 50% redistribution
+- 50% de tournament fees → burn
 
-Expected result:
-- Año 1: Inflacionario (bootstrap)
-- Año 2: Neutral
-- Año 3+: Deflacionario (sustainable)
+Proyección de Burn (conservadora):
+Año 1: 5M $FLOW quemados (poca adopción de boosts)
+Año 2: 15M $FLOW quemados (mint: 14.6M = neutral)
+Año 3+: 10M+ $FLOW quemados (mint: 3.6M = deflacionario -60%)
 ```
+
+**Resultado Esperado:**
+```
+Año 1: Inflacionario (+36.5M mint, -5M burn = +31.5M net)
+Año 2: Neutral (+14.6M mint, -15M burn = -0.4M net)
+Año 3+: Deflacionario (+3.6M mint, -10M burn = -6.4M net)
+
+Supply Máximo Estimado: ~180M $FLOW (100M pre-mine + 80M via clicks)
+Supply Circulante Año 5: ~150M $FLOW (burn continuo)
+```
+
+**Ventajas de Este Modelo:**
+1. ✅ Transparente: Todo onchain, verificable
+2. ✅ Fair launch: 60% del supply via clicks (descentralizado)
+3. ✅ Sostenible: Decay + burn = deflacionario largo plazo
+4. ✅ Incentiva early adopters: Más tokens al inicio
+5. ✅ No Ponzi: Valor respaldado por utilidad real (boosts, cosmetics, governance)
 
 ---
 

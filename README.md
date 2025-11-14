@@ -127,16 +127,32 @@ Ver [PLAN.md](./PLAN.md#3-sistema-anti-bot-multi-capa) para detalles completos.
 
 ## Economía del Token $FLOW
 
-- **Decaimiento Temporal**: Recompensas altas iniciales → bajas en 3 años
-- **Año 1**: 100 $FLOW por 1000 clicks
-- **Año 2**: 40 $FLOW por 1000 clicks
-- **Año 3**: 10 $FLOW por 1000 clicks
-- **Post-3 años**: 5 $FLOW por 1000 clicks (sostenible)
+### 1 Click = Mint Automático
 
-**Mecanismos de Burn**:
-- 50% de compras de boosts
-- 100% de compras de cosmetics
-- Fees de torneos
+**Cada click válido minta tokens $FLOW instantáneamente:**
+
+```
+Usuario hace click → Validación anti-bot → Mint de tokens → Wallet del usuario
+```
+
+### Decaimiento Temporal (3 años)
+
+La cantidad de tokens por click decrece con el tiempo:
+
+- **Año 1**: 0.01 $FLOW por click (10 tokens por 1000 clicks)
+- **Año 2**: 0.004 $FLOW por click (4 tokens por 1000 clicks)
+- **Año 3**: 0.001 $FLOW por click (1 token por 1000 clicks)
+- **Post-3 años**: 0.0005 $FLOW por click (sostenible)
+
+Esto incentiva la **participación temprana** y asegura **sostenibilidad a largo plazo**.
+
+### Mecanismos de Burn (Deflación)
+
+- 50% de compras de boosts → burn
+- 100% de compras de cosmetics → burn
+- 50% de tournament fees → burn
+
+**Resultado**: Economía deflacionaria desde año 2+
 
 ## Contributing
 

@@ -105,7 +105,7 @@ struct RewardConfig {
 #### **Systems (Lógica de Negocio)**
 
 ```cairo
-// 1. Click System
+// 1. Click System (Sistema Principal)
 #[dojo::contract]
 mod click_system {
     fn execute_click(
@@ -113,12 +113,41 @@ mod click_system {
         wallet: ContractAddress,
         timestamp: u64,
         client_signature: felt252
-    ) -> bool {
+    ) -> u256 {
         // 1. Validar anti-bot
-        // 2. Actualizar contador del jugador
-        // 3. Actualizar contador del país
-        // 4. Actualizar estado global
-        // 5. Emitir evento
+        let (is_valid, trust_score) = validate_click(world, wallet, timestamp, client_signature);
+
+        if !is_valid {
+            return 0; // Click inválido, no tokens
+        }
+
+        // 2. MINT tokens $FLOW al jugador (cada click = mint)
+        let tokens_minted = mint_tokens_for_click(world, wallet, timestamp);
+
+        // 3. Actualizar contador del jugador
+        let mut player = get!(world, wallet, Player);
+        player.total_clicks += 1;
+        player.total_rewards += tokens_minted;
+        player.last_click_timestamp = timestamp;
+        set!(world, player);
+
+        // 4. Actualizar contador del país
+        update_country_stats(world, player.country_code, 1);
+
+        // 5. Actualizar estado global
+        let mut global = get!(world, 0, GlobalState);
+        global.total_clicks += 1;
+        set!(world, global);
+
+        // 6. Emitir evento
+        emit!(ClickExecuted {
+            player: wallet,
+            tokens_minted,
+            trust_score,
+            timestamp
+        });
+
+        tokens_minted // Retorna tokens minteados
     }
 }
 
@@ -136,22 +165,53 @@ mod anti_bot_system {
     }
 }
 
-// 3. Reward Distribution System
+// 3. Token Mint System
 #[dojo::contract]
-mod reward_system {
-    fn calculate_reward(
+mod token_mint_system {
+    fn calculate_tokens_per_click(
         ref world: IWorldDispatcher,
-        clicks: u32,
-        timestamp: u64
+        timestamp: u64,
+        player: ContractAddress
     ) -> u256 {
-        // Calcula recompensa con decaimiento temporal
+        // 1. Obtener configuración de decaimiento
+        let config = get!(world, 0, RewardConfig);
+
+        // 2. Calcular tokens base según tiempo transcurrido
+        let base_tokens = calculate_decay_rate(timestamp, config);
+
+        // 3. Aplicar multiplicadores del jugador
+        let player_data = get!(world, player, Player);
+        let multiplier = calculate_player_multiplier(player_data);
+
+        // 4. Tokens finales = base × multiplicador
+        (base_tokens * multiplier) / 1000 // multiplier en base 1000
     }
 
-    fn claim_rewards(
+    fn mint_tokens_for_click(
         ref world: IWorldDispatcher,
-        wallet: ContractAddress
+        player: ContractAddress,
+        timestamp: u64
     ) -> u256 {
-        // Distribuye tokens $FLOW
+        // 1. Calcular tokens a mintear
+        let tokens = calculate_tokens_per_click(world, timestamp, player);
+
+        // 2. MINT tokens al jugador (integración con ERC20)
+        mint_flow_token(player, tokens);
+
+        // 3. Actualizar estadísticas globales
+        let mut global = get!(world, 0, GlobalState);
+        global.total_rewards_distributed += tokens;
+        set!(world, global);
+
+        // 4. Emitir evento
+        emit!(TokensMinted {
+            player,
+            amount: tokens,
+            timestamp,
+            current_rate: tokens
+        });
+
+        tokens
     }
 }
 
@@ -338,42 +398,103 @@ class BotDetectionAnalytics {
 
 ## 4. SISTEMA DE DECAIMIENTO TEMPORAL (3 AÑOS)
 
-### 4.1 Fórmula de Decaimiento
+### 4.1 Mecánica Core: 1 Click = 1 Token Mint
+
+**IMPORTANTE**: Cada click válido minta (crea) tokens $FLOW instantáneamente:
 
 ```cairo
-// Decaimiento exponencial suave
-fn calculate_reward_rate(current_timestamp: u64, config: RewardConfig) -> u256 {
-    let elapsed = current_timestamp - config.decay_start;
-    let total_duration = config.decay_end - config.decay_start;
+// Cada click válido genera tokens inmediatamente
+fn execute_click(wallet: ContractAddress, timestamp: u64) -> u256 {
+    // 1. Validar anti-bot
+    let (is_valid, trust_score) = validate_click(wallet, timestamp);
 
-    if elapsed >= total_duration {
-        return config.final_rate;
+    if !is_valid {
+        return 0; // Bot detectado, no tokens
     }
 
-    // Curva exponencial: rate = initial * e^(-k*t)
-    // donde k se ajusta para llegar a final_rate en 3 años
-    let decay_factor = (elapsed * 1000) / total_duration; // 0-1000
-    let current_rate = config.initial_rate
-        - ((config.initial_rate - config.final_rate) * decay_factor) / 1000;
+    // 2. Calcular tokens basado en tiempo (decaimiento)
+    let tokens_to_mint = calculate_tokens_per_click(timestamp);
 
-    current_rate
+    // 3. MINT tokens al jugador inmediatamente
+    mint_flow_tokens(wallet, tokens_to_mint);
+
+    // 4. Actualizar estadísticas
+    update_player_stats(wallet, 1, tokens_to_mint);
+    update_country_stats(player.country, 1);
+
+    emit!(ClickExecuted {
+        player: wallet,
+        tokens_minted: tokens_to_mint,
+        timestamp
+    });
+
+    tokens_to_mint
 }
 ```
 
-### 4.2 Configuración de Ejemplo
+### 4.2 Fórmula de Decaimiento (Tokens por Click)
 
-```
-Año 1: 100 $FLOW por 1000 clicks
-Año 2: 40 $FLOW por 1000 clicks
-Año 3: 10 $FLOW por 1000 clicks
-Post-3 años: 5 $FLOW por 1000 clicks (sostenible a largo plazo)
+```cairo
+// Decaimiento exponencial suave
+fn calculate_tokens_per_click(current_timestamp: u64) -> u256 {
+    let config = get_reward_config();
+    let elapsed = current_timestamp - config.decay_start;
+    let total_duration = config.decay_end - config.decay_start; // 3 años
+
+    if elapsed >= total_duration {
+        return config.final_rate; // Después de 3 años
+    }
+
+    // Curva exponencial: tokens = initial * e^(-k*t)
+    // donde k se ajusta para llegar a final_rate en 3 años
+    let decay_factor = (elapsed * 1000) / total_duration; // 0-1000
+    let tokens_per_click = config.initial_rate
+        - ((config.initial_rate - config.final_rate) * decay_factor) / 1000;
+
+    tokens_per_click
+}
 ```
 
-### 4.3 Incentivos de Participación Temprana
+### 4.3 Configuración de Ejemplo (Tokens por Click)
+
+**Opción A - Alta Emisión Inicial:**
+```
+Año 1 (días 0-365):     0.100 $FLOW por click  (100 tokens por 1000 clicks)
+Año 2 (días 366-730):   0.040 $FLOW por click  (40 tokens por 1000 clicks)
+Año 3 (días 731-1095):  0.010 $FLOW por click  (10 tokens por 1000 clicks)
+Post-3 años:            0.005 $FLOW por click  (5 tokens por 1000 clicks)
+```
+
+**Opción B - Emisión Moderada (Recomendada):**
+```
+Año 1 (días 0-365):     0.010 $FLOW por click  (10 tokens por 1000 clicks)
+Año 2 (días 366-730):   0.004 $FLOW por click  (4 tokens por 1000 clicks)
+Año 3 (días 731-1095):  0.001 $FLOW por click  (1 token por 1000 clicks)
+Post-3 años:            0.0005 $FLOW por click (0.5 tokens por 1000 clicks)
+```
+
+**Proyección de Supply con Opción B:**
+```
+Suposiciones:
+- 100K usuarios activos promedio
+- 100 clicks/usuario/día promedio
+- 10M clicks totales por día
+
+Supply generado:
+Año 1: 10M clicks/día × 0.01 × 365 días = 36,500,000 $FLOW
+Año 2: 10M clicks/día × 0.004 × 365 días = 14,600,000 $FLOW
+Año 3: 10M clicks/día × 0.001 × 365 días = 3,650,000 $FLOW
+TOTAL 3 años: ~54,750,000 $FLOW
+
+Post-3 años: Emisión reducida + mecanismos de burn = supply estable o deflacionario
+```
+
+### 4.4 Incentivos de Participación Temprana
 
 - **Early Bird Bonus**: Primeros 10,000 jugadores reciben NFT único
-- **Country Pioneer**: Primer jugador de cada país recibe multiplicador 2x permanente
-- **Milestone Rewards**: Rewards extras en hitos globales (1M, 10M, 100M clicks)
+- **Country Pioneer**: Primer jugador de cada país recibe multiplicador 2x permanente por 30 días
+- **Milestone Rewards**: Bonus adicional cuando el ecosistema alcanza hitos (1B clicks globales = airdrop especial)
+- **Streak Multiplier**: Jugar días consecutivos aumenta tokens por click (max 1.5x después de 30 días)
 
 ---
 
