@@ -255,6 +255,11 @@ export default defineConfig({
             return 'vendor-query';
           }
 
+          // GraphQL - URQL and GraphQL WebSocket
+          if (id.includes('urql') || id.includes('graphql') || id.includes('graphql-ws')) {
+            return 'vendor-graphql';
+          }
+
           // Framer Motion - animations
           if (id.includes('framer-motion')) {
             return 'vendor-motion';
