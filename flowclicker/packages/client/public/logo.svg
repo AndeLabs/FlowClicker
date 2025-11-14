@@ -1,0 +1,26 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle with Gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#a78bfa;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="lightningGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#fbbf24;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f59e0b;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background Circle -->
+  <circle cx="256" cy="256" r="240" fill="url(#bgGradient)"/>
+
+  <!-- Lightning Bolt -->
+  <path d="M 280 120 L 200 280 L 260 280 L 232 392 L 350 220 L 280 220 Z"
+        fill="url(#lightningGradient)"
+        stroke="#ffffff"
+        stroke-width="8"
+        stroke-linejoin="round"/>
+
+  <!-- Inner Glow -->
+  <circle cx="256" cy="256" r="240" fill="none" stroke="#ffffff" stroke-width="4" opacity="0.3"/>
+</svg>

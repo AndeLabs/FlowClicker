@@ -4,6 +4,7 @@ import { TokenCounter } from "./components/game/TokenCounter";
 import { TrustScore } from "./components/game/TrustScore";
 import { GameStats } from "./components/game/GameStats";
 import { ConnectWallet } from "./components/web3/ConnectWallet";
+import { RegisterSW } from "./components/pwa/RegisterSW";
 import { useGameState } from "./hooks/game/useGameState";
 import { usePlayerData } from "./hooks/web3/usePlayerData";
 import { useGlobalState } from "./hooks/web3/useGlobalState";
@@ -219,6 +220,9 @@ function App() {
           </p>
         </div>
       </footer>
+
+      {/* PWA Update Toast */}
+      <RegisterSW />
     </div>
   );
 }
