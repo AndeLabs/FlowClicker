@@ -3,13 +3,15 @@
   "private": true,
   "scripts": {
     "build": "pnpm recursive run build",
+    "build:client": "pnpm --filter 'client' build",
+    "build:contracts": "pnpm --filter 'contracts' build",
     "dev": "mprocs",
     "dev:client": "pnpm --filter 'client' run dev",
     "dev:contracts": "pnpm --filter 'contracts' dev",
     "dev:node": "pnpm --filter 'contracts' run dev:node",
     "foundry:up": "curl -L https://foundry.paradigm.xyz | bash && bash $HOME/.foundry/bin/foundryup",
     "mud:up": "pnpm mud set-version --tag main && pnpm install",
-    "prepare": "(forge --version || pnpm foundry:up)",
+    "prepare": "command -v forge >/dev/null 2>&1 || bash scripts/install-foundry.sh",
     "test": "pnpm recursive run test"
   },
   "devDependencies": {
